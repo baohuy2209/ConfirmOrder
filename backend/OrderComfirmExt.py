@@ -38,7 +38,7 @@ class OrderConfirmExt(Ui_MainWindow):
         isChecked = True
         for product in self.list_product_confirm:
             need_product = self.product_dal.get_product_by_id(product["id"])
-            if product["quantity"] > need_product.quantity:
+            if need_product.quantity < product["minimum_stock"]:
                 isChecked = False
                 break
         if isChecked == True:
@@ -149,14 +149,12 @@ class OrderConfirmExt(Ui_MainWindow):
     def on_change_tab_main(self, index):
         self.tabWidget.setCurrentIndex(index)
     def display_confirmed_order(self):
-        self.listWidgetConfirmedOrder.clear()
         list_confirmed_order = self.order_dal.get_confirmed_order()
         list_confirmed_order = [order.order_id for order in list_confirmed_order]
+        print(list_confirmed_order)
         self.listWidgetConfirmedOrder.addItems(list_confirmed_order)
     def display_unconfirmed_order(self):
-        self.listWidgetUncomfirmedOrder.clear()
-        list_unconfirmed_order = self.order_dal.get_unconfirmed_order()
-        list_unconfirmed_order = [order.order_id for order in list_unconfirmed_order]
+        list_unconfirmed_order = [order.order_id for order in self.order_dal.get_unconfirmed_order()]
         self.listWidgetUncomfirmedOrder.addItems(list_unconfirmed_order)
     def show(self):
         self.MainWindow.show()
