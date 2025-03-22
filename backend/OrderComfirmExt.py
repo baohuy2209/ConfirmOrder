@@ -14,6 +14,7 @@ class OrderConfirmExt(Ui_MainWindow):
         self.list_product_confirm = []
         self.count_row = 0
         self.current_order_id = None
+        self.change_successfully = False
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.MainWindow = MainWindow
@@ -30,7 +31,7 @@ class OrderConfirmExt(Ui_MainWindow):
         self.but_lammoi.clicked.connect(self.reset_all)
         self.listWidgetConfirmedOrder.itemClicked.connect(self.on_item_clicked)
         self.listWidgetUncomfirmedOrder.itemClicked.connect(
-            self.on_item_clicked
+            self.on_item_clicked_un
         )
         self.but_xacnhan.clicked.connect(self.change_status_order)
         self.but_lammoitrang.clicked.connect(self.reset_confirm_tab)
@@ -44,21 +45,48 @@ class OrderConfirmExt(Ui_MainWindow):
         if isChecked == True:
             id = self.current_order_id
             self.order_dal.change_status(id)
+            self.change_successfully = True
             msg = QMessageBox()
             msg.setText("Đổi trạng thái thành công")
             msg.setWindowTitle("Thông báo")
             msg.exec()
         else:
             msg = QMessageBox()
+            self.change_successfully = False
             msg.setText("Đơn hàng không hợp lệ")
             msg.setWindowTitle("Thông báo")
             msg.exec()
     def reset_confirm_tab(self):
         self.tbl_confirm.setRowCount(0)
         self.list_product_confirm = []
-        self.listWidgetConfirmedOrder.addItem(self.current_order_id)
-        current_item = self.listWidgetUncomfirmedOrder.currentItem()
-        self.listWidgetUncomfirmedOrder.takeItem(self.listWidgetUncomfirmedOrder.row(current_item))
+        if self.change_successfully == True:
+            self.listWidgetConfirmedOrder.addItem(self.current_order_id)
+            current_item = self.listWidgetUncomfirmedOrder.currentItem()
+            self.listWidgetUncomfirmedOrder.takeItem(self.listWidgetUncomfirmedOrder.row(current_item))
+    def on_item_clicked_un(self, item):
+        order_id = item.text()
+        self.list_product_confirm = []
+        self.current_order_id = order_id
+        searched_order = self.order_dal.get_order_by_id(order_id)
+        if searched_order == None:
+            msg = QMessageBox()
+            msg.setText("Không tìm thấy")
+            msg.setWindowTitle("thông báo")
+        else:
+            self.tbl_confirm.setRowCount(0)
+            list_product = searched_order.list_product
+            for i in range(len(list_product)):
+                self.tbl_confirm.insertRow(i)
+                current_product = list_product[i]
+                self.list_product_confirm.append(current_product[0])
+                column_name = QTableWidgetItem(current_product[0]["name"])
+                column_unit_price = QTableWidgetItem(str(current_product[0]["unit_price"]))
+                column_quantity = QTableWidgetItem(str(current_product[1]))
+                column_amount = QTableWidgetItem(str(current_product[0]["unit_price"] * current_product[1]))
+                self.tbl_confirm.setItem(i, 0, column_name)
+                self.tbl_confirm.setItem(i, 1, column_quantity)
+                self.tbl_confirm.setItem(i, 2, column_unit_price)
+                self.tbl_confirm.setItem(i, 3, column_amount)
     def on_item_clicked(self, item):
         order_id = item.text()
         self.list_product_confirm = []
@@ -154,7 +182,11 @@ class OrderConfirmExt(Ui_MainWindow):
         print(list_confirmed_order)
         self.listWidgetConfirmedOrder.addItems(list_confirmed_order)
     def display_unconfirmed_order(self):
-        list_unconfirmed_order = [order.order_id for order in self.order_dal.get_unconfirmed_order()]
-        self.listWidgetUncomfirmedOrder.addItems(list_unconfirmed_order)
+        temp_ls = self.order_dal.get_unconfirmed_order()
+        list_unconfirmed_order = []
+        for order in temp_ls:
+            list_unconfirmed_order.append(order.order_id)
+        for order_id in list_unconfirmed_order:
+            self.listWidgetUncomfirmedOrder.addItem(order_id)
     def show(self):
         self.MainWindow.show()
