@@ -1,3 +1,5 @@
+import traceback
+
 from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
 from dal.OrderDAL import OrderDAL
@@ -182,11 +184,13 @@ class OrderConfirmExt(Ui_MainWindow):
         print(list_confirmed_order)
         self.listWidgetConfirmedOrder.addItems(list_confirmed_order)
     def display_unconfirmed_order(self):
-        temp_ls = self.order_dal.get_unconfirmed_order()
-        list_unconfirmed_order = []
-        for order in temp_ls:
-            list_unconfirmed_order.append(order.order_id)
-        for order_id in list_unconfirmed_order:
-            self.listWidgetUncomfirmedOrder.addItem(order_id)
+        try:
+            list_unconfirmed_order = self.order_dal.get_unconfirmed_order()
+            list_unconfirmed_order = [order.order_id for order in list_unconfirmed_order]
+            list_unconfirmed_order = list_unconfirmed_order[:int(len(list_unconfirmed_order)/2)]
+            print(list_unconfirmed_order)
+            self.listWidgetUncomfirmedOrder.addItems(list_unconfirmed_order)
+        except:
+            traceback.print_exc()
     def show(self):
         self.MainWindow.show()

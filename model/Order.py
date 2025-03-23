@@ -8,6 +8,6 @@ class Order:
         self.contact_no = contact_no
         self.total = total
     def __str__(self):
-        info = f"List product: {self.list_product}"
+        info = f"order_id: {self.order_id} List product: {self.list_product}"
         return info
 

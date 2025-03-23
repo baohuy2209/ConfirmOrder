@@ -1,2 +1,5 @@
-my_list = [1,2,3,4,5,6]
-print(my_list[:int(len(my_list)/2)])
+from dal.OrderDAL import OrderDAL
+
+order_dal = OrderDAL()
+lo = order_dal.get_unconfirmed_order()
+print(len(lo))
